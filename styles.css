@@ -1,10 +1,80 @@
+.napkin-generate-modal .napkin-visual-query-wrapper {
+	margin-top: 6px;
+	margin-bottom: 12px;
+}
+
+.napkin-generate-modal .napkin-visual-query-header {
+	appearance: none;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+	width: 100%;
+	min-height: 58px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	border-radius: 12px;
+	padding: 9px 12px;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	box-shadow: none;
+	transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.napkin-generate-modal .napkin-visual-query-header:hover {
+	border-color: var(--interactive-accent);
+	background: var(--background-secondary-alt);
+}
+
+.napkin-generate-modal .napkin-visual-query-header.is-expanded {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+}
+
+.napkin-generate-modal .napkin-visual-query-header-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+	flex: 1;
+}
+
+.napkin-generate-modal .napkin-visual-query-header-label {
+	font-weight: 600;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+	line-height: 1.25;
+}
+
+.napkin-generate-modal .napkin-visual-query-header-description {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	line-height: 1.35;
+	white-space: normal;
+}
+
+.napkin-generate-modal .napkin-visual-query-header-chevron {
+	margin-top: 2px;
+	color: var(--text-muted);
+	opacity: 0.9;
+	transition: transform 120ms ease;
+}
+
+.napkin-generate-modal .napkin-visual-query-header.is-expanded .napkin-visual-query-header-chevron {
+	transform: rotate(180deg);
+}
+
 .napkin-generate-modal .napkin-visual-query-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	align-items: stretch;
 	gap: 10px;
-	margin-top: 8px;
-	margin-bottom: 12px;
+	margin-top: 10px;
+}
+
+.napkin-generate-modal .napkin-visual-query-grid.is-collapsed {
+	display: none;
 }
 
 .napkin-generate-modal .napkin-visual-query-card {

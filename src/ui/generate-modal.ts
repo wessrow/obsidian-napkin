@@ -95,8 +95,6 @@ export class GenerateDiagramModal extends Modal {
 	}
 
 	private renderVisualQuerySelector(containerEl: HTMLElement): void {
-		const cards = containerEl.createDiv({ cls: "napkin-visual-query-grid" });
-
 		const options = [
 			{
 				value: "" as const,
@@ -107,7 +105,43 @@ export class GenerateDiagramModal extends Modal {
 			...NAPKIN_VISUAL_QUERIES,
 		];
 
+		const wrapper = containerEl.createDiv({ cls: "napkin-visual-query-wrapper" });
+		const headerButton = wrapper.createEl("button", {
+			cls: "napkin-visual-query-header",
+			attr: { type: "button" },
+		});
+
+		const headerText = headerButton.createDiv({ cls: "napkin-visual-query-header-text" });
+		const headerLabel = headerText.createDiv({ cls: "napkin-visual-query-header-label" });
+		const headerDescription = headerText.createDiv({ cls: "napkin-visual-query-header-description" });
+		const chevron = headerButton.createDiv({ cls: "napkin-visual-query-header-chevron" });
+		setIcon(chevron, "chevron-down");
+
+		const cards = wrapper.createDiv({ cls: "napkin-visual-query-grid is-collapsed" });
+
 		const buttons: HTMLButtonElement[] = [];
+		let isExpanded = false;
+
+		const getSelectedOption = () => {
+			return options.find((option) => option.value === this.selectedVisualQuery) ?? options[0];
+		};
+
+		const updateHeader = (): void => {
+			const selected = getSelectedOption() ?? {
+				value: "",
+				label: "Auto",
+				description: "Let Napkin choose the best layout.",
+				icon: "sparkles",
+			};
+			headerLabel.setText(`Visual type: ${selected.label}`);
+			headerDescription.setText(selected.description);
+		};
+
+		const updateExpandedState = (): void => {
+			cards.toggleClass("is-collapsed", !isExpanded);
+			headerButton.toggleClass("is-expanded", isExpanded);
+			headerButton.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+		};
 
 		const updateActiveState = (): void => {
 			for (const button of buttons) {
@@ -140,12 +174,22 @@ export class GenerateDiagramModal extends Modal {
 
 			button.addEventListener("click", () => {
 				this.selectedVisualQuery = option.value;
+				isExpanded = false;
+				updateExpandedState();
+				updateHeader();
 				updateActiveState();
 			});
 
 			buttons.push(button);
 		}
 
+		headerButton.addEventListener("click", () => {
+			isExpanded = !isExpanded;
+			updateExpandedState();
+		});
+
+		updateHeader();
+		updateExpandedState();
 		updateActiveState();
 	}
 }
