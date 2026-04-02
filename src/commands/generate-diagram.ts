@@ -50,13 +50,19 @@ async function runGeneration(
 	const notice = new Notice("Generating diagram…", 0);
 
 	try {
-		// 1. Submit request
+		// 1. Submit request — resolve "auto" colour mode against the live Obsidian theme
+		const resolvedColorMode = result.colorMode === "auto"
+			? (document.body.classList.contains("theme-dark") ? "dark" : "light")
+			: result.colorMode;
+
 		const { id: requestId } = await createVisualRequest(
 			plugin.settings.napkinApiToken,
 			selectedText,
 			result.styleId,
 			result.format,
-			result.visualQuery
+			result.visualQuery,
+			resolvedColorMode,
+			result.orientation === "auto" ? undefined : result.orientation
 		);
 
 		// 2. Poll until complete, updating the notice with elapsed time
@@ -99,7 +105,6 @@ async function runGeneration(
 	} catch (err) {
 		notice.hide();
 		const message = err instanceof Error ? err.message : String(err);
-		new Notice(`Napkin error: ${message}`, 8000);
-		console.error("Napkin plugin:", err);
+		new Notice(`Napkin error: ${message}`, 0);
 	}
 }

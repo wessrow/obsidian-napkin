@@ -2,6 +2,8 @@ import { requestUrl } from "obsidian";
 import {
 	NapkinOutputFormat,
 	NapkinVisualQuery,
+	NapkinColorMode,
+	NapkinOrientation,
 	NapkinCreateResponse,
 	NapkinStatusResponse,
 	NapkinGeneratedFile,
@@ -16,7 +18,9 @@ export async function createVisualRequest(
 	content: string,
 	styleId: string,
 	format: NapkinOutputFormat,
-	visualQuery?: NapkinVisualQuery
+	visualQuery?: NapkinVisualQuery,
+	colorMode?: NapkinColorMode,
+	orientation?: NapkinOrientation
 ): Promise<NapkinCreateResponse> {
 	const response = await requestUrl({
 		url: `${API_BASE}/visual`,
@@ -31,14 +35,22 @@ export async function createVisualRequest(
 			format,
 			style_id: styleId || undefined,
 			visual_query: visualQuery || undefined,
+			color_mode: colorMode || undefined,
+			orientation: orientation || undefined,
 			language: "en",
 		}),
 		throw: false,
 	});
 
 	if (response.status !== 201) {
-		const msg = (response.json as { error?: { message?: string } })?.error?.message
-			?? `HTTP ${response.status}`;
+		const raw = response.text;
+		let msg = `HTTP ${response.status}`;
+		try {
+			const body = JSON.parse(raw) as { error?: { message?: string } };
+			msg = body?.error?.message ?? msg;
+		} catch {
+			if (raw) msg = raw;
+		}
 		throw new Error(`Napkin API: ${msg}`);
 	}
 
@@ -68,7 +80,8 @@ export async function pollForCompletion(
 		});
 
 		if (response.status !== 200) {
-			throw new Error(`Napkin status check failed: HTTP ${response.status}`);
+			const raw = response.text;
+			throw new Error(`Napkin status check failed: HTTP ${response.status} — ${raw || "no body"}`);
 		}
 
 		const status = response.json as NapkinStatusResponse;

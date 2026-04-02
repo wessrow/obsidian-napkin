@@ -1,12 +1,14 @@
 import { App, Modal, Setting, setIcon } from "obsidian";
 import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERIES } from "../utils/constants";
-import { NapkinOutputFormat, NapkinVisualQuery } from "../types";
+import { NapkinOutputFormat, NapkinVisualQuery, NapkinColorModeSetting, NapkinOrientation } from "../types";
 import { ObsidianNapkinSettings } from "../settings";
 
 export interface GenerateModalResult {
 	styleId: string;
 	format: NapkinOutputFormat;
 	visualQuery?: NapkinVisualQuery;
+	colorMode: NapkinColorModeSetting;
+	orientation: NapkinOrientation;
 }
 
 type OnConfirm = (result: GenerateModalResult) => void;
@@ -17,6 +19,8 @@ export class GenerateDiagramModal extends Modal {
 	private selectedStyleId: string;
 	private selectedFormat: NapkinOutputFormat;
 	private selectedVisualQuery: NapkinVisualQuery | "";
+	private selectedColorMode: NapkinColorModeSetting;
+	private selectedOrientation: NapkinOrientation;
 
 	constructor(app: App, settings: ObsidianNapkinSettings, onConfirm: OnConfirm) {
 		super(app);
@@ -25,6 +29,8 @@ export class GenerateDiagramModal extends Modal {
 		this.selectedStyleId = settings.defaultStyle;
 		this.selectedFormat = settings.defaultOutputFormat;
 		this.selectedVisualQuery = "";
+		this.selectedColorMode = settings.defaultColorMode;
+		this.selectedOrientation = settings.defaultOrientation;
 	}
 
 	onOpen(): void {
@@ -56,6 +62,35 @@ export class GenerateDiagramModal extends Modal {
 		this.renderVisualQuerySelector(contentEl);
 
 		new Setting(contentEl)
+			.setName("Color mode")
+			.setDesc("Diagram palette. Auto matches the current Obsidian theme.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("auto", "Auto (match Obsidian)")
+					.addOption("light", "Light")
+					.addOption("dark", "Dark")
+					.setValue(this.selectedColorMode)
+					.onChange((value) => {
+						this.selectedColorMode = value as NapkinColorModeSetting;
+					})
+			);
+
+		new Setting(contentEl)
+			.setName("Orientation")
+			.setDesc("Slide layout for the generated diagram.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("auto", "Auto")
+					.addOption("horizontal", "Horizontal")
+					.addOption("vertical", "Vertical")
+					.addOption("square", "Square")
+					.setValue(this.selectedOrientation)
+					.onChange((value) => {
+						this.selectedOrientation = value as NapkinOrientation;
+					})
+			);
+
+		new Setting(contentEl)
 			.setName("Output format")
 			.addDropdown((dropdown) =>
 				dropdown
@@ -80,6 +115,8 @@ export class GenerateDiagramModal extends Modal {
 							styleId: this.selectedStyleId,
 							format: this.selectedFormat,
 							visualQuery: this.selectedVisualQuery || undefined,
+							colorMode: this.selectedColorMode,
+							orientation: this.selectedOrientation,
 						});
 					})
 			)

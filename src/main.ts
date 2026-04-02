@@ -12,7 +12,20 @@ export default class ObsidianNapkinPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<ObsidianNapkinSettings>);
+		const saved = await this.loadData() as Partial<ObsidianNapkinSettings>;
+		const merged = Object.assign({}, DEFAULT_SETTINGS, saved);
+
+		// Guard against stale enum values from older plugin versions
+		const validOrientations = ["auto", "horizontal", "vertical", "square"];
+		if (!validOrientations.includes(merged.defaultOrientation)) {
+			merged.defaultOrientation = DEFAULT_SETTINGS.defaultOrientation;
+		}
+		const validColorModes = ["auto", "light", "dark"];
+		if (!validColorModes.includes(merged.defaultColorMode)) {
+			merged.defaultColorMode = DEFAULT_SETTINGS.defaultColorMode;
+		}
+
+		this.settings = merged;
 	}
 
 	async saveSettings(): Promise<void> {

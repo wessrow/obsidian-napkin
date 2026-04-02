@@ -1,14 +1,16 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import ObsidianNapkinPlugin from "./main";
-import { NapkinOutputFormat } from "./types";
+import { NapkinOutputFormat, NapkinColorModeSetting, NapkinOrientation } from "./types";
 import { NAPKIN_STYLES, DEFAULT_STYLE_ID } from "./utils/constants";
 
-export type { NapkinOutputFormat };
+export type { NapkinOutputFormat, NapkinColorModeSetting, NapkinOrientation };
 
 export interface ObsidianNapkinSettings {
 	napkinApiToken: string;
 	defaultStyle: string;
 	defaultOutputFormat: NapkinOutputFormat;
+	defaultColorMode: NapkinColorModeSetting;
+	defaultOrientation: NapkinOrientation;
 	filenamePrefix: string;
 }
 
@@ -16,6 +18,8 @@ export const DEFAULT_SETTINGS: ObsidianNapkinSettings = {
 	napkinApiToken: "",
 	defaultStyle: DEFAULT_STYLE_ID,
 	defaultOutputFormat: "png",
+	defaultColorMode: "auto",
+	defaultOrientation: "auto",
 	filenamePrefix: "napkin-sketch",
 };
 
@@ -79,6 +83,38 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Default color mode")
+			.setDesc("Diagram palette. Auto matches the current Obsidian theme.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("auto", "Auto (match Obsidian)")
+					.addOption("light", "Light")
+					.addOption("dark", "Dark")
+					.setValue(this.plugin.settings.defaultColorMode)
+					.onChange(async (value) => {
+						this.plugin.settings.defaultColorMode = value as NapkinColorModeSetting;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Default orientation")
+			.setDesc("Slide layout for generated diagrams.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("auto", "Auto")
+					.addOption("horizontal", "Horizontal")
+					.addOption("vertical", "Vertical")
+					.addOption("square", "Square")
+					.setValue(this.plugin.settings.defaultOrientation)
+					.onChange(async (value) => {
+						this.plugin.settings.defaultOrientation = value as NapkinOrientation;
+						await this.plugin.saveSettings();
+					})
+			);
+
 		new Setting(containerEl)
 			.setName("Attachment filename prefix")
 			.setDesc("Base name used for generated diagram files.")
