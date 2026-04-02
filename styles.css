@@ -19,7 +19,13 @@
 	text-align: left;
 	cursor: pointer;
 	box-shadow: none;
+	outline: none;
 	transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.napkin-generate-modal .napkin-visual-query-header:focus-visible {
+	border-color: var(--background-modifier-border-focus);
+	box-shadow: var(--input-shadow);
 }
 
 .napkin-generate-modal .napkin-visual-query-header:hover {
@@ -95,7 +101,13 @@
 	white-space: normal !important;
 	overflow-wrap: anywhere;
 	cursor: pointer;
+	outline: none;
 	transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+}
+
+.napkin-generate-modal .napkin-visual-query-card:focus-visible {
+	border-color: var(--background-modifier-border-focus);
+	box-shadow: var(--input-shadow);
 }
 
 .napkin-generate-modal .napkin-visual-query-card:hover {
