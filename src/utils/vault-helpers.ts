@@ -1,7 +1,11 @@
 import { App, TFile, normalizePath } from "obsidian";
 import { NapkinOutputFormat } from "../types";
 
-function resolveAttachmentFolder(app: App, activeFilePath: string): string {
+function resolveAttachmentFolder(app: App, activeFilePath: string, outputDirectory: string): string {
+	if (outputDirectory) {
+		return normalizePath(outputDirectory);
+	}
+
 	// Respect Obsidian's configured attachment folder path
 	const configured = ((app.vault as unknown as Record<string, unknown>)
 		.getConfig as ((key: string) => unknown) | undefined)?.("attachmentFolderPath");
@@ -33,18 +37,33 @@ function resolveAttachmentFolder(app: App, activeFilePath: string): string {
 export async function saveAttachment(
 	app: App,
 	activeFilePath: string,
+	outputDirectory: string,
 	filenamePrefix: string,
 	format: NapkinOutputFormat,
 	data: ArrayBuffer
 ): Promise<TFile> {
-	const folder = resolveAttachmentFolder(app, activeFilePath);
+	const folder = resolveAttachmentFolder(app, activeFilePath, outputDirectory);
 
-	if (folder && !app.vault.getFolderByPath(folder)) {
-		await app.vault.createFolder(folder);
-	}
+	await ensureFolderExists(app, folder);
 
 	const filePath = findFreePath(app, folder, filenamePrefix, format);
 	return app.vault.createBinary(filePath, data);
+}
+
+async function ensureFolderExists(app: App, folder: string): Promise<void> {
+	if (!folder || app.vault.getFolderByPath(folder)) {
+		return;
+	}
+
+	const segments = folder.split("/").filter(Boolean);
+	let currentPath = "";
+
+	for (const segment of segments) {
+		currentPath = currentPath ? `${currentPath}/${segment}` : segment;
+		if (!app.vault.getFolderByPath(currentPath)) {
+			await app.vault.createFolder(currentPath);
+		}
+	}
 }
 
 function findFreePath(

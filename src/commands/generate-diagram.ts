@@ -92,6 +92,7 @@ async function runGeneration(
 		const savedFile = await saveAttachment(
 			plugin.app,
 			activeFile.path,
+			plugin.settings.outputDirectory,
 			plugin.settings.filenamePrefix,
 			result.format,
 			binary
