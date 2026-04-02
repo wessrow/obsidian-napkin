@@ -95,7 +95,7 @@ export class GenerateDiagramModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Context")
-			.setDesc("Optional extra context to guide how Napkin interprets the selected text.");
+			.setDesc("Optional context for the generated diagram.");
 
 		this.renderContextInput(contentEl);
 
