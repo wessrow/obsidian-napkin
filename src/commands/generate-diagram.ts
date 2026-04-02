@@ -100,7 +100,7 @@ async function runGeneration(
 		);
 
 		// 5. Insert embed on the line below the selection
-		editor.replaceRange(`\n![[${savedFile.name}]]`, insertAt);
+		editor.replaceRange(`\n![[${savedFile.path}]]`, insertAt);
 
 		notice.hide();
 		new Notice(`Diagram saved: ${savedFile.name}`);
