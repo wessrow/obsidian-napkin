@@ -19,7 +19,7 @@ export class GenerateDiagramModal extends Modal {
 	private readonly onConfirm: OnConfirm;
 	private selectedStyleId: string;
 	private selectedFormat: NapkinOutputFormat;
-	private selectedVisualQuery: NapkinVisualQuery | "";
+	private selectedVisualQuery: NapkinVisualQuery;
 	private selectedColorMode: NapkinColorModeSetting;
 	private selectedOrientation: NapkinOrientation;
 	private contextText: string;
