@@ -1,4 +1,4 @@
-import { NapkinStyle } from "../types";
+import { NapkinStyle, NapkinVisualQueryOption } from "../types";
 
 export const NAPKIN_STYLES: NapkinStyle[] = [
 	// Colorful
@@ -24,3 +24,9 @@ export const NAPKIN_STYLES: NapkinStyle[] = [
 ];
 
 export const DEFAULT_STYLE_ID: string = NAPKIN_STYLES[0]?.id ?? "CDQPRVVJCSTPRBBCD5Q6AWR";
+
+export const NAPKIN_VISUAL_QUERIES: NapkinVisualQueryOption[] = [
+	{ value: "timeline", label: "Timeline" },
+	{ value: "mindmap", label: "Mind map" },
+	{ value: "iceberg", label: "Iceberg" },
+];

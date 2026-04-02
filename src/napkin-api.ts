@@ -1,6 +1,7 @@
 import { requestUrl } from "obsidian";
 import {
 	NapkinOutputFormat,
+	NapkinVisualQuery,
 	NapkinCreateResponse,
 	NapkinStatusResponse,
 	NapkinGeneratedFile,
@@ -14,7 +15,8 @@ export async function createVisualRequest(
 	token: string,
 	content: string,
 	styleId: string,
-	format: NapkinOutputFormat
+	format: NapkinOutputFormat,
+	visualQuery?: NapkinVisualQuery
 ): Promise<NapkinCreateResponse> {
 	const response = await requestUrl({
 		url: `${API_BASE}/visual`,
@@ -28,6 +30,7 @@ export async function createVisualRequest(
 			content,
 			format,
 			style_id: styleId || undefined,
+			visual_query: visualQuery || undefined,
 			language: "en",
 		}),
 		throw: false,
