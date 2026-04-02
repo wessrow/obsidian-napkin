@@ -1,7 +1,9 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import ObsidianNapkinPlugin from "./main";
+import { NapkinOutputFormat } from "./types";
+import { NAPKIN_STYLES, DEFAULT_STYLE_ID } from "./utils/constants";
 
-export type NapkinOutputFormat = "png" | "svg";
+export type { NapkinOutputFormat };
 
 export interface ObsidianNapkinSettings {
 	napkinApiToken: string;
@@ -12,9 +14,9 @@ export interface ObsidianNapkinSettings {
 
 export const DEFAULT_SETTINGS: ObsidianNapkinSettings = {
 	napkinApiToken: "",
-	defaultStyle: "napkin",
+	defaultStyle: DEFAULT_STYLE_ID,
 	defaultOutputFormat: "png",
-	filenamePrefix: "napkin-sketch"
+	filenamePrefix: "napkin-sketch",
 };
 
 export class ObsidianNapkinSettingTab extends PluginSettingTab {
@@ -48,18 +50,17 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Default style")
 			.setDesc("Pre-selected style in the generate diagram modal.")
-			.addDropdown((dropdown) =>
+			.addDropdown((dropdown) => {
+				for (const style of NAPKIN_STYLES) {
+					dropdown.addOption(style.id, `${style.name} — ${style.category}`);
+				}
 				dropdown
-					.addOption("napkin", "Napkin")
-					.addOption("sketch", "Sketch")
-					.addOption("flowchart", "Flowchart")
-					.addOption("mindmap", "Mind map")
 					.setValue(this.plugin.settings.defaultStyle)
 					.onChange(async (value) => {
 						this.plugin.settings.defaultStyle = value;
 						await this.plugin.saveSettings();
-					})
-			);
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Default output format")
