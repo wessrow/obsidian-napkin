@@ -3,6 +3,36 @@
 	margin-bottom: 12px;
 }
 
+.napkin-generate-modal .napkin-context-input-wrapper {
+	margin-top: 6px;
+	margin-bottom: 12px;
+}
+
+.napkin-generate-modal .napkin-context-input {
+	width: 100%;
+	min-height: 74px;
+	resize: vertical;
+	padding: 9px 12px;
+	border-radius: 12px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	line-height: 1.35;
+	font: inherit;
+	outline: none;
+	transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.napkin-generate-modal .napkin-context-input:hover {
+	border-color: var(--interactive-accent);
+	background: var(--background-secondary-alt);
+}
+
+.napkin-generate-modal .napkin-context-input:focus-visible {
+	border-color: var(--background-modifier-border-focus);
+	box-shadow: var(--input-shadow);
+}
+
 .napkin-generate-modal .napkin-visual-query-header {
 	appearance: none;
 	display: flex;

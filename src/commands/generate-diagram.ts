@@ -62,7 +62,8 @@ async function runGeneration(
 			result.format,
 			result.visualQuery,
 			resolvedColorMode,
-			result.orientation === "auto" ? undefined : result.orientation
+			result.orientation === "auto" ? undefined : result.orientation,
+			result.context
 		);
 
 		// 2. Poll until complete, updating the notice with elapsed time

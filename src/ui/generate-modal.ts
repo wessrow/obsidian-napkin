@@ -9,6 +9,7 @@ export interface GenerateModalResult {
 	visualQuery?: NapkinVisualQuery;
 	colorMode: NapkinColorModeSetting;
 	orientation: NapkinOrientation;
+	context?: string;
 }
 
 type OnConfirm = (result: GenerateModalResult) => void;
@@ -21,6 +22,7 @@ export class GenerateDiagramModal extends Modal {
 	private selectedVisualQuery: NapkinVisualQuery | "";
 	private selectedColorMode: NapkinColorModeSetting;
 	private selectedOrientation: NapkinOrientation;
+	private contextText: string;
 
 	constructor(app: App, settings: ObsidianNapkinSettings, onConfirm: OnConfirm) {
 		super(app);
@@ -31,6 +33,7 @@ export class GenerateDiagramModal extends Modal {
 		this.selectedVisualQuery = "";
 		this.selectedColorMode = settings.defaultColorMode;
 		this.selectedOrientation = settings.defaultOrientation;
+		this.contextText = "";
 	}
 
 	onOpen(): void {
@@ -91,6 +94,12 @@ export class GenerateDiagramModal extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName("Context")
+			.setDesc("Optional extra context to guide how Napkin interprets the selected text.");
+
+		this.renderContextInput(contentEl);
+
+		new Setting(contentEl)
 			.setName("Output format")
 			.addDropdown((dropdown) =>
 				dropdown
@@ -117,6 +126,7 @@ export class GenerateDiagramModal extends Modal {
 							visualQuery: this.selectedVisualQuery || undefined,
 							colorMode: this.selectedColorMode,
 							orientation: this.selectedOrientation,
+							context: this.contextText.trim() || undefined,
 						});
 					})
 			)
@@ -229,4 +239,20 @@ export class GenerateDiagramModal extends Modal {
 		updateExpandedState();
 		updateActiveState();
 	}
+
+		private renderContextInput(containerEl: HTMLElement): void {
+			const wrapper = containerEl.createDiv({ cls: "napkin-context-input-wrapper" });
+			const textArea = wrapper.createEl("textarea", {
+				cls: "napkin-context-input",
+				attr: {
+					rows: "3",
+					placeholder: "Add background context, constraints, or intended audience",
+				},
+			});
+
+			textArea.value = this.contextText;
+			textArea.addEventListener("input", () => {
+				this.contextText = textArea.value;
+			});
+		}
 }

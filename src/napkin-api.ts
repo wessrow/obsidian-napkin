@@ -20,7 +20,8 @@ export async function createVisualRequest(
 	format: NapkinOutputFormat,
 	visualQuery?: NapkinVisualQuery,
 	colorMode?: NapkinColorMode,
-	orientation?: NapkinOrientation
+	orientation?: NapkinOrientation,
+	context?: string
 ): Promise<NapkinCreateResponse> {
 	const response = await requestUrl({
 		url: `${API_BASE}/visual`,
@@ -32,6 +33,7 @@ export async function createVisualRequest(
 		},
 		body: JSON.stringify({
 			content,
+			context: context || undefined,
 			format,
 			style_id: styleId || undefined,
 			visual_query: visualQuery || undefined,
