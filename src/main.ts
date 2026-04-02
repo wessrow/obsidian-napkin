@@ -1,5 +1,6 @@
 import { Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, ObsidianNapkinSettingTab, ObsidianNapkinSettings } from "./settings";
+import { registerGenerateDiagramCommand } from "./commands/generate-diagram";
 
 export default class ObsidianNapkinPlugin extends Plugin {
 	settings!: ObsidianNapkinSettings;
@@ -7,6 +8,7 @@ export default class ObsidianNapkinPlugin extends Plugin {
 	async onload(): Promise<void> {
 		await this.loadSettings();
 		this.addSettingTab(new ObsidianNapkinSettingTab(this.app, this));
+		registerGenerateDiagramCommand(this);
 	}
 
 	async loadSettings(): Promise<void> {
