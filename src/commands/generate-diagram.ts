@@ -9,24 +9,12 @@ export function registerGenerateDiagramCommand(plugin: ObsidianNapkinPlugin): vo
 		id: "generate-diagram",
 		name: "Generate diagram",
 		editorCallback(editor: Editor, ctx: MarkdownView | MarkdownFileInfo) {
-			if (!plugin.settings.napkinApiToken) {
-				new Notice("Napkin: add your API token in plugin settings.");
+			const generationInput = getGenerationInput(plugin, editor, ctx);
+			if (!generationInput) {
 				return;
 			}
 
-			if (!editor.somethingSelected()) {
-				new Notice("Napkin: select some text first.");
-				return;
-			}
-
-			const selectedText = editor.getSelection();
-			const insertAt = editor.getCursor("to");
-			const activeFile = ctx.file;
-
-			if (!activeFile) {
-				new Notice("Napkin: could not determine the active file.");
-				return;
-			}
+			const { selectedText, insertAt, activeFile } = generationInput;
 
 			new GenerateDiagramModal(
 				plugin.app,
@@ -37,6 +25,59 @@ export function registerGenerateDiagramCommand(plugin: ObsidianNapkinPlugin): vo
 			).open();
 		},
 	});
+
+	plugin.addCommand({
+		id: "quick-generate-diagram",
+		name: "Quick generate diagram",
+		editorCallback(editor: Editor, ctx: MarkdownView | MarkdownFileInfo) {
+			const generationInput = getGenerationInput(plugin, editor, ctx);
+			if (!generationInput) {
+				return;
+			}
+
+			const { selectedText, insertAt, activeFile } = generationInput;
+			void runGeneration(plugin, editor, activeFile, selectedText, insertAt, {
+				styleId: plugin.settings.defaultStyle,
+				format: plugin.settings.defaultOutputFormat,
+				visualQuery: undefined,
+				colorMode: plugin.settings.defaultColorMode,
+				orientation: plugin.settings.defaultOrientation,
+				context: undefined,
+			});
+		},
+	});
+}
+
+function getGenerationInput(
+	plugin: ObsidianNapkinPlugin,
+	editor: Editor,
+	ctx: MarkdownView | MarkdownFileInfo
+): {
+	selectedText: string;
+	insertAt: EditorPosition;
+	activeFile: TFile;
+} | null {
+	if (!plugin.settings.napkinApiToken) {
+		new Notice("Napkin: add your API token in plugin settings.");
+		return null;
+	}
+
+	if (!editor.somethingSelected()) {
+		new Notice("Napkin: select some text first.");
+		return null;
+	}
+
+	const activeFile = ctx.file;
+	if (!activeFile) {
+		new Notice("Napkin: could not determine the active file.");
+		return null;
+	}
+
+	return {
+		selectedText: editor.getSelection(),
+		insertAt: editor.getCursor("to"),
+		activeFile,
+	};
 }
 
 async function runGeneration(
