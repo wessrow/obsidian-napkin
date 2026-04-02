@@ -1,5 +1,5 @@
 export type NapkinOutputFormat = "png" | "svg";
-export type NapkinVisualQuery = "timeline" | "mindmap" | "iceberg";
+export type NapkinVisualQuery = string;
 export type NapkinColorMode = "light" | "dark";
 export type NapkinColorModeSetting = "auto" | NapkinColorMode;
 export type NapkinOrientation = "auto" | "horizontal" | "vertical" | "square";
@@ -12,11 +12,9 @@ export interface NapkinStyle {
 	category: string;
 }
 
-export interface NapkinVisualQueryOption {
-	value: NapkinVisualQuery;
-	label: string;
-	description: string;
-	icon: string;
+export interface NapkinVisualQueryGroup {
+	category: string;
+	queries: NapkinVisualQuery[];
 }
 
 export interface NapkinGeneratedFile {

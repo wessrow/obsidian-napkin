@@ -1,5 +1,5 @@
 import { App, Modal, Setting, setIcon } from "obsidian";
-import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERIES } from "../utils/constants";
+import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERY_GROUPS } from "../utils/constants";
 import { NapkinOutputFormat, NapkinVisualQuery, NapkinColorModeSetting, NapkinOrientation } from "../types";
 import { ObsidianNapkinSettings } from "../settings";
 
@@ -142,16 +142,6 @@ export class GenerateDiagramModal extends Modal {
 	}
 
 	private renderVisualQuerySelector(containerEl: HTMLElement): void {
-		const options = [
-			{
-				value: "" as const,
-				label: "Auto",
-				description: "Let Napkin choose the best layout.",
-				icon: "sparkles",
-			},
-			...NAPKIN_VISUAL_QUERIES,
-		];
-
 		const wrapper = containerEl.createDiv({ cls: "napkin-visual-query-wrapper" });
 		const headerButton = wrapper.createEl("button", {
 			cls: "napkin-visual-query-header",
@@ -164,28 +154,38 @@ export class GenerateDiagramModal extends Modal {
 		const chevron = headerButton.createDiv({ cls: "napkin-visual-query-header-chevron" });
 		setIcon(chevron, "chevron-down");
 
-		const cards = wrapper.createDiv({ cls: "napkin-visual-query-grid is-collapsed" });
+		const panel = wrapper.createDiv({ cls: "napkin-visual-query-panel is-collapsed" });
+		const autoRow = panel.createDiv({ cls: "napkin-visual-query-auto-row" });
+		const autoButton = autoRow.createEl("button", {
+			cls: "napkin-visual-query-chip",
+			text: "Auto",
+			attr: { type: "button" },
+		});
+		autoButton.dataset.value = "";
+
+		const groups = panel.createDiv({ cls: "napkin-visual-query-groups" });
 
 		const buttons: HTMLButtonElement[] = [];
 		let isExpanded = false;
 
-		const getSelectedOption = () => {
-			return options.find((option) => option.value === this.selectedVisualQuery) ?? options[0];
+		const getVisualQueryLabel = (value: string): string => {
+			if (!value) {
+				return "Auto";
+			}
+
+			return value
+				.split("-")
+				.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+				.join(" ");
 		};
 
 		const updateHeader = (): void => {
-			const selected = getSelectedOption() ?? {
-				value: "",
-				label: "Auto",
-				description: "Let Napkin choose the best layout.",
-				icon: "sparkles",
-			};
-			headerLabel.setText(`Visual type: ${selected.label}`);
-			headerDescription.setText(selected.description);
+			headerLabel.setText(`Visual type: ${getVisualQueryLabel(this.selectedVisualQuery)}`);
+			headerDescription.setText("Grouped by use case.");
 		};
 
 		const updateExpandedState = (): void => {
-			cards.toggleClass("is-collapsed", !isExpanded);
+			panel.toggleClass("is-collapsed", !isExpanded);
 			headerButton.toggleClass("is-expanded", isExpanded);
 			headerButton.setAttribute("aria-expanded", isExpanded ? "true" : "false");
 		};
@@ -199,28 +199,10 @@ export class GenerateDiagramModal extends Modal {
 			}
 		};
 
-		for (const option of options) {
-			const button = cards.createEl("button", {
-				cls: "napkin-visual-query-card",
-				attr: { type: "button" },
-			});
-			button.dataset.value = option.value;
-
-			const iconEl = button.createDiv({ cls: "napkin-visual-query-icon" });
-			setIcon(iconEl, option.icon);
-
-			button.createEl("div", {
-				cls: "napkin-visual-query-label",
-				text: option.label,
-			});
-
-			button.createEl("div", {
-				cls: "napkin-visual-query-description",
-				text: option.description,
-			});
-
+		const registerButton = (button: HTMLButtonElement, value: string): void => {
+			button.dataset.value = value;
 			button.addEventListener("click", () => {
-				this.selectedVisualQuery = option.value;
+				this.selectedVisualQuery = value;
 				isExpanded = false;
 				updateExpandedState();
 				updateHeader();
@@ -228,6 +210,28 @@ export class GenerateDiagramModal extends Modal {
 			});
 
 			buttons.push(button);
+		};
+
+		registerButton(autoButton, "");
+
+		for (const group of NAPKIN_VISUAL_QUERY_GROUPS) {
+			const groupEl = groups.createDiv({ cls: "napkin-visual-query-group" });
+			groupEl.createDiv({
+				cls: "napkin-visual-query-group-title",
+				text: group.category,
+			});
+
+			const chipsEl = groupEl.createDiv({ cls: "napkin-visual-query-chip-grid" });
+
+			for (const query of group.queries) {
+				const button = chipsEl.createEl("button", {
+					cls: "napkin-visual-query-chip",
+					text: getVisualQueryLabel(query),
+					attr: { type: "button" },
+				});
+
+				registerButton(button, query);
+			}
 		}
 
 		headerButton.addEventListener("click", () => {
@@ -240,19 +244,19 @@ export class GenerateDiagramModal extends Modal {
 		updateActiveState();
 	}
 
-		private renderContextInput(containerEl: HTMLElement): void {
-			const wrapper = containerEl.createDiv({ cls: "napkin-context-input-wrapper" });
-			const textArea = wrapper.createEl("textarea", {
-				cls: "napkin-context-input",
-				attr: {
-					rows: "3",
-					placeholder: "Add background context, constraints, or intended audience",
-				},
-			});
+	private renderContextInput(containerEl: HTMLElement): void {
+		const wrapper = containerEl.createDiv({ cls: "napkin-context-input-wrapper" });
+		const textArea = wrapper.createEl("textarea", {
+			cls: "napkin-context-input",
+			attr: {
+				rows: "3",
+				placeholder: "Add background context, constraints, or intended audience",
+			},
+		});
 
-			textArea.value = this.contextText;
-			textArea.addEventListener("input", () => {
-				this.contextText = textArea.value;
-			});
-		}
+		textArea.value = this.contextText;
+		textArea.addEventListener("input", () => {
+			this.contextText = textArea.value;
+		});
+	}
 }

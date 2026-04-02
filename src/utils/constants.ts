@@ -1,4 +1,4 @@
-import { NapkinStyle, NapkinVisualQueryOption } from "../types";
+import { NapkinStyle, NapkinVisualQueryGroup } from "../types";
 
 export const NAPKIN_STYLES: NapkinStyle[] = [
 	// Colorful
@@ -25,8 +25,18 @@ export const NAPKIN_STYLES: NapkinStyle[] = [
 
 export const DEFAULT_STYLE_ID: string = NAPKIN_STYLES[0]?.id ?? "CDQPRVVJCSTPRBBCD5Q6AWR";
 
-export const NAPKIN_VISUAL_QUERIES: NapkinVisualQueryOption[] = [
-	{ value: "timeline", label: "Timeline", description: "Chronological steps and milestones.", icon: "list-ordered" },
-	{ value: "mindmap", label: "Mind map", description: "Radial branches from a central idea.", icon: "network" },
-	{ value: "iceberg", label: "Iceberg", description: "Visible surface with hidden depth.", icon: "mountain" },
+export const NAPKIN_VISUAL_QUERY_GROUPS: NapkinVisualQueryGroup[] = [
+	{ category: "Mindmap", queries: ["mindmap-horizontal", "mindmap-vertical", "mindmap-left", "mindmap-right"] },
+	{ category: "Process", queries: ["flowchart", "sequence", "stairs", "journey", "cycle", "gantt"] },
+	{ category: "Data", queries: ["bar", "bar-horizontal", "stacked-bar", "stacked-bar-horizontal", "line", "area", "waterfall", "gauge", "pie", "drop-off", "dumbbell-vertical", "dumbbell-horizontal", "sankey"] },
+	{ category: "Timelines", queries: ["timeline", "sequence", "flowchart", "gantt", "cycle"] },
+	{ category: "Comparison", queries: ["pros-and-cons", "table", "versus", "balance", "relationship", "podium", "decision", "spectrum", "quadrant", "venn"] },
+	{ category: "Business frameworks", queries: ["swot", "pestel", "porters", "pyramid", "bullseye", "spectrum", "funnel", "gantt", "quadrant", "venn", "journey"] },
+	{ category: "Brainstorming", queries: ["mindmap", "key-ideas", "list", "table", "decision"] },
+	{ category: "Parts of a whole", queries: ["key-ideas", "diverge", "converge", "iceberg"] },
+	{ category: "Problems and solutions", queries: ["problem-solution", "transformation", "pestel", "porters", "swot", "challenges", "bridge"] },
+	{ category: "Visual metaphors", queries: ["transformation", "podium", "journey", "vision", "impact", "balance", "performance", "bottleneck", "hole", "spectrum", "trend", "stairs", "challenges", "race", "dialogue", "lens", "bridge", "prism", "pillar", "iceberg"] },
+	{ category: "Narrative", queries: ["dialogue", "decision"] },
+	{ category: "Cause and effect", queries: ["root-causes", "impact", "cycle", "flowchart", "sequence"] },
+	{ category: "Hierarchy", queries: ["pyramid", "table", "bullseye", "iceberg", "quadrant"] },
 ];
