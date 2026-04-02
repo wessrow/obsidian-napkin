@@ -14,6 +14,8 @@ export interface NapkinStyle {
 
 export interface NapkinVisualQueryGroup {
 	category: string;
+	icon: string;
+	keywords?: string[];
 	queries: NapkinVisualQuery[];
 }
 

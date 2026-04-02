@@ -23,6 +23,7 @@ export class GenerateDiagramModal extends Modal {
 	private selectedColorMode: NapkinColorModeSetting;
 	private selectedOrientation: NapkinOrientation;
 	private contextText: string;
+	private visualQuerySearch: string;
 
 	constructor(app: App, settings: ObsidianNapkinSettings, onConfirm: OnConfirm) {
 		super(app);
@@ -34,6 +35,7 @@ export class GenerateDiagramModal extends Modal {
 		this.selectedColorMode = settings.defaultColorMode;
 		this.selectedOrientation = settings.defaultOrientation;
 		this.contextText = "";
+		this.visualQuerySearch = "";
 	}
 
 	onOpen(): void {
@@ -155,6 +157,15 @@ export class GenerateDiagramModal extends Modal {
 		setIcon(chevron, "chevron-down");
 
 		const panel = wrapper.createDiv({ cls: "napkin-visual-query-panel is-collapsed" });
+		const searchWrapper = panel.createDiv({ cls: "napkin-visual-query-search-wrapper" });
+		const searchInput = searchWrapper.createEl("input", {
+			cls: "napkin-visual-query-search",
+			attr: {
+				type: "text",
+				placeholder: "Search by diagram, category, or intent",
+			},
+		});
+		const suggestionList = searchWrapper.createDiv({ cls: "napkin-visual-query-suggestions is-hidden" });
 		const autoRow = panel.createDiv({ cls: "napkin-visual-query-auto-row" });
 		const autoButton = autoRow.createEl("button", {
 			cls: "napkin-visual-query-chip",
@@ -188,6 +199,86 @@ export class GenerateDiagramModal extends Modal {
 			panel.toggleClass("is-collapsed", !isExpanded);
 			headerButton.toggleClass("is-expanded", isExpanded);
 			headerButton.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+			if (isExpanded) {
+				window.setTimeout(() => searchInput.focus(), 0);
+			}
+		};
+
+		const matchesSearch = (groupCategory: string, keywords: string[], query: string): boolean => {
+			const normalizedSearch = this.visualQuerySearch.trim().toLowerCase();
+			if (!normalizedSearch) {
+				return true;
+			}
+
+			const label = getVisualQueryLabel(query).toLowerCase();
+			const category = groupCategory.toLowerCase();
+			const raw = query.toLowerCase();
+			return label.includes(normalizedSearch)
+				|| raw.includes(normalizedSearch)
+				|| category.includes(normalizedSearch)
+				|| keywords.some((keyword) => keyword.includes(normalizedSearch));
+		};
+
+		const renderSuggestions = (): void => {
+			suggestionList.empty();
+
+			const normalizedSearch = this.visualQuerySearch.trim().toLowerCase();
+			if (!normalizedSearch) {
+				suggestionList.addClass("is-hidden");
+				return;
+			}
+
+			const matches: Array<{ query: string; category: string }> = [];
+			const seen = new Set<string>();
+
+			for (const group of NAPKIN_VISUAL_QUERY_GROUPS) {
+				const keywords = (group.keywords ?? []).map((keyword) => keyword.toLowerCase());
+				for (const query of group.queries) {
+					if (!matchesSearch(group.category, keywords, query)) {
+						continue;
+					}
+
+					if (seen.has(query)) {
+						continue;
+					}
+
+					seen.add(query);
+					matches.push({ query, category: group.category });
+				}
+			}
+
+			const limitedMatches = matches.slice(0, 8);
+			if (limitedMatches.length === 0) {
+				suggestionList.addClass("is-hidden");
+				return;
+			}
+
+			for (const match of limitedMatches) {
+				const button = suggestionList.createEl("button", {
+					cls: "napkin-visual-query-suggestion",
+					attr: { type: "button" },
+				});
+				button.createSpan({
+					cls: "napkin-visual-query-suggestion-label",
+					text: getVisualQueryLabel(match.query),
+				});
+				button.createSpan({
+					cls: "napkin-visual-query-suggestion-category",
+					text: match.category,
+				});
+
+				button.addEventListener("click", () => {
+					this.selectedVisualQuery = match.query;
+					this.visualQuerySearch = match.query;
+					searchInput.value = match.query;
+					renderGroups();
+					updateHeader();
+					updateActiveState();
+					suggestionList.addClass("is-hidden");
+				});
+			}
+
+			suggestionList.removeClass("is-hidden");
 		};
 
 		const updateActiveState = (): void => {
@@ -214,31 +305,66 @@ export class GenerateDiagramModal extends Modal {
 
 		registerButton(autoButton, "");
 
-		for (const group of NAPKIN_VISUAL_QUERY_GROUPS) {
-			const groupEl = groups.createDiv({ cls: "napkin-visual-query-group" });
-			groupEl.createDiv({
-				cls: "napkin-visual-query-group-title",
-				text: group.category,
-			});
+		const renderGroups = (): void => {
+			groups.empty();
+			buttons.length = 0;
+			buttons.push(autoButton);
 
-			const chipsEl = groupEl.createDiv({ cls: "napkin-visual-query-chip-grid" });
+			for (const group of NAPKIN_VISUAL_QUERY_GROUPS) {
+				const keywords = (group.keywords ?? []).map((keyword) => keyword.toLowerCase());
+				const visibleQueries = group.queries.filter((query) => matchesSearch(group.category, keywords, query));
+				if (visibleQueries.length === 0) {
+					continue;
+				}
 
-			for (const query of group.queries) {
-				const button = chipsEl.createEl("button", {
-					cls: "napkin-visual-query-chip",
-					text: getVisualQueryLabel(query),
-					attr: { type: "button" },
+				const groupEl = groups.createDiv({ cls: "napkin-visual-query-group" });
+				const titleRow = groupEl.createDiv({ cls: "napkin-visual-query-group-title-row" });
+				const iconEl = titleRow.createDiv({ cls: "napkin-visual-query-group-icon" });
+				setIcon(iconEl, group.icon);
+				titleRow.createDiv({
+					cls: "napkin-visual-query-group-title",
+					text: group.category,
 				});
 
-				registerButton(button, query);
+				const chipsEl = groupEl.createDiv({ cls: "napkin-visual-query-chip-grid" });
+
+				for (const query of visibleQueries) {
+					const button = chipsEl.createEl("button", {
+						cls: "napkin-visual-query-chip",
+						text: getVisualQueryLabel(query),
+						attr: { type: "button" },
+					});
+
+					registerButton(button, query);
+				}
 			}
-		}
+
+			updateActiveState();
+		};
+
+		searchInput.addEventListener("input", () => {
+			this.visualQuerySearch = searchInput.value;
+			renderGroups();
+			renderSuggestions();
+		});
+
+		searchInput.addEventListener("keydown", (evt) => {
+			if (evt.key === "Escape") {
+				suggestionList.addClass("is-hidden");
+			}
+		});
+
+		searchInput.addEventListener("blur", () => {
+			window.setTimeout(() => suggestionList.addClass("is-hidden"), 120);
+		});
 
 		headerButton.addEventListener("click", () => {
 			isExpanded = !isExpanded;
 			updateExpandedState();
 		});
 
+		renderGroups();
+		renderSuggestions();
 		updateHeader();
 		updateExpandedState();
 		updateActiveState();
