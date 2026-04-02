@@ -55,7 +55,8 @@ async function runGeneration(
 			plugin.settings.napkinApiToken,
 			selectedText,
 			result.styleId,
-			result.format
+			result.format,
+			result.visualQuery
 		);
 
 		// 2. Poll until complete, updating the notice with elapsed time

@@ -1,11 +1,12 @@
 import { App, Modal, Setting } from "obsidian";
-import { NAPKIN_STYLES } from "../utils/constants";
-import { NapkinOutputFormat } from "../types";
+import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERIES } from "../utils/constants";
+import { NapkinOutputFormat, NapkinVisualQuery } from "../types";
 import { ObsidianNapkinSettings } from "../settings";
 
 export interface GenerateModalResult {
 	styleId: string;
 	format: NapkinOutputFormat;
+	visualQuery?: NapkinVisualQuery;
 }
 
 type OnConfirm = (result: GenerateModalResult) => void;
@@ -15,6 +16,7 @@ export class GenerateDiagramModal extends Modal {
 	private readonly onConfirm: OnConfirm;
 	private selectedStyleId: string;
 	private selectedFormat: NapkinOutputFormat;
+	private selectedVisualQuery: NapkinVisualQuery | "";
 
 	constructor(app: App, settings: ObsidianNapkinSettings, onConfirm: OnConfirm) {
 		super(app);
@@ -22,6 +24,7 @@ export class GenerateDiagramModal extends Modal {
 		this.onConfirm = onConfirm;
 		this.selectedStyleId = settings.defaultStyle;
 		this.selectedFormat = settings.defaultOutputFormat;
+		this.selectedVisualQuery = "";
 	}
 
 	onOpen(): void {
@@ -42,6 +45,23 @@ export class GenerateDiagramModal extends Modal {
 					.setValue(this.selectedStyleId)
 					.onChange((value) => {
 						this.selectedStyleId = value;
+					});
+			});
+
+		new Setting(contentEl)
+			.setName("Visual type")
+			.setDesc("Optional layout hint for generated visuals.")
+			.addDropdown((dropdown) => {
+				dropdown.addOption("", "Auto (let Napkin choose)");
+				for (const visualQuery of NAPKIN_VISUAL_QUERIES) {
+					dropdown.addOption(visualQuery.value, visualQuery.label);
+				}
+				dropdown
+					.setValue(this.selectedVisualQuery)
+					.onChange((value) => {
+						if (!value || value === "timeline" || value === "mindmap" || value === "iceberg") {
+							this.selectedVisualQuery = value as NapkinVisualQuery | "";
+						}
 					});
 			});
 
@@ -69,6 +89,7 @@ export class GenerateDiagramModal extends Modal {
 						this.onConfirm({
 							styleId: this.selectedStyleId,
 							format: this.selectedFormat,
+							visualQuery: this.selectedVisualQuery || undefined,
 						});
 					})
 			)
