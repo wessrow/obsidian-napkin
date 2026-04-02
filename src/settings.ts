@@ -36,6 +36,10 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
+			.setName("Token (required)")
+			.setHeading();
+
+		new Setting(containerEl)
 			.setName("Napkin API token")
 			.setDesc("Stored locally in this plugin's data.json file. Treat your vault device as trusted.")
 			.addText((text) => {
@@ -50,6 +54,10 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 				text.inputEl.type = "password";
 				text.inputEl.autocomplete = "off";
 			});
+
+		new Setting(containerEl)
+			.setName("Styling")
+			.setHeading();
 
 		new Setting(containerEl)
 			.setName("Default style")
@@ -114,6 +122,10 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Output")
+			.setHeading();
 
 		new Setting(containerEl)
 			.setName("Attachment filename prefix")
