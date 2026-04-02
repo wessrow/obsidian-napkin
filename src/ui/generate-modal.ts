@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from "obsidian";
+import { App, Modal, Setting, setIcon } from "obsidian";
 import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERIES } from "../utils/constants";
 import { NapkinOutputFormat, NapkinVisualQuery } from "../types";
 import { ObsidianNapkinSettings } from "../settings";
@@ -29,6 +29,7 @@ export class GenerateDiagramModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
+		contentEl.addClass("napkin-generate-modal");
 
 		new Setting(contentEl)
 			.setName("Generate diagram")
@@ -50,20 +51,9 @@ export class GenerateDiagramModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Visual type")
-			.setDesc("Optional layout hint for generated visuals.")
-			.addDropdown((dropdown) => {
-				dropdown.addOption("", "Auto (let Napkin choose)");
-				for (const visualQuery of NAPKIN_VISUAL_QUERIES) {
-					dropdown.addOption(visualQuery.value, visualQuery.label);
-				}
-				dropdown
-					.setValue(this.selectedVisualQuery)
-					.onChange((value) => {
-						if (!value || value === "timeline" || value === "mindmap" || value === "iceberg") {
-							this.selectedVisualQuery = value as NapkinVisualQuery | "";
-						}
-					});
-			});
+			.setDesc("Optional layout hint for generated visuals.");
+
+		this.renderVisualQuerySelector(contentEl);
 
 		new Setting(contentEl)
 			.setName("Output format")
@@ -102,5 +92,60 @@ export class GenerateDiagramModal extends Modal {
 
 	onClose(): void {
 		this.contentEl.empty();
+	}
+
+	private renderVisualQuerySelector(containerEl: HTMLElement): void {
+		const cards = containerEl.createDiv({ cls: "napkin-visual-query-grid" });
+
+		const options = [
+			{
+				value: "" as const,
+				label: "Auto",
+				description: "Let Napkin choose the best layout.",
+				icon: "sparkles",
+			},
+			...NAPKIN_VISUAL_QUERIES,
+		];
+
+		const buttons: HTMLButtonElement[] = [];
+
+		const updateActiveState = (): void => {
+			for (const button of buttons) {
+				const value = button.dataset.value ?? "";
+				const isActive = value === this.selectedVisualQuery;
+				button.toggleClass("is-active", isActive);
+				button.setAttribute("aria-pressed", isActive ? "true" : "false");
+			}
+		};
+
+		for (const option of options) {
+			const button = cards.createEl("button", {
+				cls: "napkin-visual-query-card",
+				attr: { type: "button" },
+			});
+			button.dataset.value = option.value;
+
+			const iconEl = button.createDiv({ cls: "napkin-visual-query-icon" });
+			setIcon(iconEl, option.icon);
+
+			button.createEl("div", {
+				cls: "napkin-visual-query-label",
+				text: option.label,
+			});
+
+			button.createEl("div", {
+				cls: "napkin-visual-query-description",
+				text: option.description,
+			});
+
+			button.addEventListener("click", () => {
+				this.selectedVisualQuery = option.value;
+				updateActiveState();
+			});
+
+			buttons.push(button);
+		}
+
+		updateActiveState();
 	}
 }

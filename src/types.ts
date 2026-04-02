@@ -12,6 +12,8 @@ export interface NapkinStyle {
 export interface NapkinVisualQueryOption {
 	value: NapkinVisualQuery;
 	label: string;
+	description: string;
+	icon: string;
 }
 
 export interface NapkinGeneratedFile {
