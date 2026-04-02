@@ -32,7 +32,7 @@ export function registerGenerateDiagramCommand(plugin: ObsidianNapkinPlugin): vo
 				plugin.app,
 				plugin.settings,
 				(result) => {
-					runGeneration(plugin, editor, activeFile, selectedText, insertAt, result);
+					void runGeneration(plugin, editor, activeFile, selectedText, insertAt, result);
 				}
 			).open();
 		},
@@ -70,7 +70,7 @@ async function runGeneration(
 			plugin.settings.napkinApiToken,
 			requestId,
 			(elapsedSeconds) => {
-				notice.noticeEl.setText(`Generating diagram… (${elapsedSeconds}s)`);
+				notice.messageEl.setText(`Generating diagram… (${elapsedSeconds}s)`);
 			}
 		);
 

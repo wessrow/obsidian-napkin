@@ -120,7 +120,7 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 			.setDesc("Base name used for generated diagram files.")
 			.addText((text) =>
 				text
-					.setPlaceholder("napkin-sketch")
+					.setPlaceholder("Napkin sketch")
 					.setValue(this.plugin.settings.filenamePrefix)
 					.onChange(async (value) => {
 						this.plugin.settings.filenamePrefix = value.trim() || DEFAULT_SETTINGS.filenamePrefix;
