@@ -2,7 +2,36 @@ import { App, Modal, Setting, setIcon } from "obsidian";
 import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERY_GROUPS } from "../utils/constants";
 import { NapkinOutputFormat, NapkinVisualQuery, NapkinColorModeSetting, NapkinOrientation } from "../types";
 import { ObsidianNapkinSettings } from "../settings";
-import { normalizeLanguageTagOrAuto } from "../utils/language";
+
+const NAPKIN_LANGUAGE_OPTIONS: Array<{ value: string; label: string }> = [
+	{ value: "auto", label: "Auto (detect from selection)" },
+	{ value: "en-US", label: "English (US) — en-US" },
+	{ value: "fr-FR", label: "French (France) — fr-FR" },
+	{ value: "sv-SE", label: "Swedish (Sweden) — sv-SE" },
+	{ value: "de-DE", label: "German (Germany) — de-DE" },
+	{ value: "es-ES", label: "Spanish (Spain) — es-ES" },
+	{ value: "it-IT", label: "Italian (Italy) — it-IT" },
+	{ value: "pt-PT", label: "Portuguese (Portugal) — pt-PT" },
+	{ value: "ja-JP", label: "Japanese (Japan) — ja-JP" },
+	{ value: "ko-KR", label: "Korean (Korea) — ko-KR" },
+	{ value: "zh-CN", label: "Chinese (Simplified) — zh-CN" },
+];
+
+const SUPPORTED_LANGUAGE_TAGS = new Set(NAPKIN_LANGUAGE_OPTIONS.map((option) => option.value));
+
+function normalizeLanguageSelection(value: string | undefined | null): string {
+	const trimmed = (value ?? "").trim();
+	if (!trimmed || trimmed.toLowerCase() === "auto") {
+		return "auto";
+	}
+
+	try {
+		const [canonical] = Intl.getCanonicalLocales(trimmed);
+		return canonical && SUPPORTED_LANGUAGE_TAGS.has(canonical) ? canonical : "auto";
+	} catch {
+		return "auto";
+	}
+}
 
 export interface GenerateModalResult {
 	styleId: string;
@@ -37,7 +66,7 @@ export class GenerateDiagramModal extends Modal {
 		this.selectedVisualQuery = "";
 		this.selectedColorMode = settings.defaultColorMode;
 		this.selectedOrientation = settings.defaultOrientation;
-		this.selectedLanguage = settings.defaultLanguage;
+		this.selectedLanguage = normalizeLanguageSelection(settings.defaultLanguage);
 		this.contextText = "";
 		this.visualQuerySearch = "";
 	}
@@ -101,15 +130,18 @@ export class GenerateDiagramModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Language")
-			.setDesc("BCP 47 language tag. Use 'auto' to detect from selected text.")
-			.addText((text) =>
-				text
-					.setPlaceholder("auto or en-US")
+			.setDesc("BCP 47 language tag for generation.")
+			.addDropdown((dropdown) => {
+				for (const option of NAPKIN_LANGUAGE_OPTIONS) {
+					dropdown.addOption(option.value, option.label);
+				}
+
+				dropdown
 					.setValue(this.selectedLanguage)
 					.onChange((value) => {
-						this.selectedLanguage = normalizeLanguageTagOrAuto(value);
-					})
-			);
+						this.selectedLanguage = normalizeLanguageSelection(value);
+					});
+			});
 
 		new Setting(contentEl)
 			.setName("Context")

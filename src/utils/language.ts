@@ -2,6 +2,22 @@ import { franc } from "franc-min";
 
 const DEFAULT_LANGUAGE_TAG = "en-US";
 
+export const NAPKIN_LANGUAGE_OPTIONS: Array<{ value: string; label: string }> = [
+	{ value: "auto", label: "Auto (detect from selection)" },
+	{ value: "en-US", label: "English (US) — en-US" },
+	{ value: "fr-FR", label: "French (France) — fr-FR" },
+	{ value: "sv-SE", label: "Swedish (Sweden) — sv-SE" },
+	{ value: "de-DE", label: "German (Germany) — de-DE" },
+	{ value: "es-ES", label: "Spanish (Spain) — es-ES" },
+	{ value: "it-IT", label: "Italian (Italy) — it-IT" },
+	{ value: "pt-PT", label: "Portuguese (Portugal) — pt-PT" },
+	{ value: "ja-JP", label: "Japanese (Japan) — ja-JP" },
+	{ value: "ko-KR", label: "Korean (Korea) — ko-KR" },
+	{ value: "zh-CN", label: "Chinese (Simplified) — zh-CN" },
+];
+
+const SUPPORTED_LANGUAGE_TAGS = new Set(NAPKIN_LANGUAGE_OPTIONS.map((option) => option.value));
+
 // Maps ISO 639-3 output from franc to stable BCP 47 tags accepted by Napkin.
 const ISO3_TO_BCP47: Record<string, string> = {
 	arb: "ar-SA",
@@ -61,6 +77,11 @@ export function normalizeLanguageTagOrAuto(value: string | undefined | null): st
 	} catch {
 		return trimmed;
 	}
+}
+
+export function normalizeLanguageSelection(value: string | undefined | null): string {
+	const normalized = normalizeLanguageTagOrAuto(value);
+	return SUPPORTED_LANGUAGE_TAGS.has(normalized) ? normalized : "auto";
 }
 
 export function resolveLanguageForRequest(selection: string, configuredLanguage: string): string {

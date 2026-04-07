@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, ObsidianNapkinSettingTab, ObsidianNapkinSettings } from "./settings";
 import { registerGenerateDiagramCommand } from "./commands/generate-diagram";
-import { normalizeLanguageTagOrAuto } from "./utils/language";
+import { normalizeLanguageSelection } from "./utils/language";
 
 export default class ObsidianNapkinPlugin extends Plugin {
 	settings!: ObsidianNapkinSettings;
@@ -25,7 +25,7 @@ export default class ObsidianNapkinPlugin extends Plugin {
 		if (!validColorModes.includes(merged.defaultColorMode)) {
 			merged.defaultColorMode = DEFAULT_SETTINGS.defaultColorMode;
 		}
-		merged.defaultLanguage = normalizeLanguageTagOrAuto(merged.defaultLanguage);
+		merged.defaultLanguage = normalizeLanguageSelection(merged.defaultLanguage);
 
 		this.settings = merged;
 	}

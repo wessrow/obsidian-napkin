@@ -3,6 +3,7 @@ import ObsidianNapkinPlugin from "./main";
 import { NapkinOutputFormat, NapkinColorModeSetting, NapkinOrientation } from "./types";
 import { NAPKIN_STYLES, DEFAULT_STYLE_ID } from "./utils/constants";
 import { FolderSuggest } from "./ui/folder-suggest";
+import { NAPKIN_LANGUAGE_OPTIONS, normalizeLanguageSelection } from "./utils/language";
 
 export type { NapkinOutputFormat, NapkinColorModeSetting, NapkinOrientation };
 
@@ -112,16 +113,19 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Default language")
-			.setDesc("BCP 47 language tag used for generation. Use 'auto' to detect from selected text.")
-			.addText((text) =>
-				text
-					.setPlaceholder("auto or en-US")
-					.setValue(this.plugin.settings.defaultLanguage)
+			.setDesc("BCP 47 language tag used for generation.")
+			.addDropdown((dropdown) => {
+				for (const option of NAPKIN_LANGUAGE_OPTIONS) {
+					dropdown.addOption(option.value, option.label);
+				}
+
+				dropdown
+					.setValue(normalizeLanguageSelection(this.plugin.settings.defaultLanguage))
 					.onChange(async (value) => {
-						this.plugin.settings.defaultLanguage = normalizeLanguageTagOrAutoInput(value);
+						this.plugin.settings.defaultLanguage = normalizeLanguageSelection(value);
 						await this.plugin.saveSettings();
-					})
-			);
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Output")
@@ -176,19 +180,5 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-	}
-}
-
-function normalizeLanguageTagOrAutoInput(value: string | undefined | null): string {
-	const trimmed = (value ?? "").trim();
-	if (!trimmed || trimmed.toLowerCase() === "auto") {
-		return "auto";
-	}
-
-	try {
-		const [canonical] = Intl.getCanonicalLocales(trimmed);
-		return canonical ?? trimmed;
-	} catch {
-		return trimmed;
 	}
 }
