@@ -2,6 +2,7 @@ import { App, Modal, Setting, setIcon } from "obsidian";
 import { NAPKIN_STYLES, NAPKIN_VISUAL_QUERY_GROUPS } from "../utils/constants";
 import { NapkinOutputFormat, NapkinVisualQuery, NapkinColorModeSetting, NapkinOrientation } from "../types";
 import { ObsidianNapkinSettings } from "../settings";
+import { normalizeLanguageTagOrAuto } from "../utils/language";
 
 export interface GenerateModalResult {
 	styleId: string;
@@ -9,6 +10,7 @@ export interface GenerateModalResult {
 	visualQuery?: NapkinVisualQuery;
 	colorMode: NapkinColorModeSetting;
 	orientation: NapkinOrientation;
+	language: string;
 	context?: string;
 }
 
@@ -22,6 +24,7 @@ export class GenerateDiagramModal extends Modal {
 	private selectedVisualQuery: NapkinVisualQuery;
 	private selectedColorMode: NapkinColorModeSetting;
 	private selectedOrientation: NapkinOrientation;
+	private selectedLanguage: string;
 	private contextText: string;
 	private visualQuerySearch: string;
 
@@ -34,6 +37,7 @@ export class GenerateDiagramModal extends Modal {
 		this.selectedVisualQuery = "";
 		this.selectedColorMode = settings.defaultColorMode;
 		this.selectedOrientation = settings.defaultOrientation;
+		this.selectedLanguage = settings.defaultLanguage;
 		this.contextText = "";
 		this.visualQuerySearch = "";
 	}
@@ -96,6 +100,18 @@ export class GenerateDiagramModal extends Modal {
 			);
 
 		new Setting(contentEl)
+			.setName("Language")
+			.setDesc("BCP 47 language tag. Use 'auto' to detect from selected text.")
+			.addText((text) =>
+				text
+					.setPlaceholder("auto or en-US")
+					.setValue(this.selectedLanguage)
+					.onChange((value) => {
+						this.selectedLanguage = normalizeLanguageTagOrAuto(value);
+					})
+			);
+
+		new Setting(contentEl)
 			.setName("Context")
 			.setDesc("Optional context for the generated diagram.");
 
@@ -128,6 +144,7 @@ export class GenerateDiagramModal extends Modal {
 							visualQuery: this.selectedVisualQuery || undefined,
 							colorMode: this.selectedColorMode,
 							orientation: this.selectedOrientation,
+							language: this.selectedLanguage,
 							context: this.contextText.trim() || undefined,
 						});
 					})

@@ -3,6 +3,7 @@ import ObsidianNapkinPlugin from "../main";
 import { GenerateDiagramModal, GenerateModalResult } from "../ui/generate-modal";
 import { createVisualRequest, pollForCompletion, downloadVisualFile } from "../napkin-api";
 import { saveAttachment } from "../utils/vault-helpers";
+import { resolveLanguageForRequest } from "../utils/language";
 
 export function registerGenerateDiagramCommand(plugin: ObsidianNapkinPlugin): void {
 	plugin.addCommand({
@@ -42,6 +43,7 @@ export function registerGenerateDiagramCommand(plugin: ObsidianNapkinPlugin): vo
 				visualQuery: undefined,
 				colorMode: plugin.settings.defaultColorMode,
 				orientation: plugin.settings.defaultOrientation,
+				language: plugin.settings.defaultLanguage,
 				context: undefined,
 			});
 		},
@@ -95,6 +97,7 @@ async function runGeneration(
 		const resolvedColorMode = result.colorMode === "auto"
 			? (document.body.classList.contains("theme-dark") ? "dark" : "light")
 			: result.colorMode;
+		const resolvedLanguage = resolveLanguageForRequest(selectedText, result.language);
 
 		const { id: requestId } = await createVisualRequest(
 			plugin.settings.napkinApiToken,
@@ -104,7 +107,8 @@ async function runGeneration(
 			result.visualQuery,
 			resolvedColorMode,
 			result.orientation === "auto" ? undefined : result.orientation,
-			result.context
+			result.context,
+			resolvedLanguage
 		);
 
 		// 2. Poll until complete, updating the notice with elapsed time
