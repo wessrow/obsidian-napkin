@@ -12,6 +12,7 @@ export interface ObsidianNapkinSettings {
 	defaultOutputFormat: NapkinOutputFormat;
 	defaultColorMode: NapkinColorModeSetting;
 	defaultOrientation: NapkinOrientation;
+	defaultLanguage: string;
 	outputDirectory: string;
 	filenamePrefix: string;
 }
@@ -22,6 +23,7 @@ export const DEFAULT_SETTINGS: ObsidianNapkinSettings = {
 	defaultOutputFormat: "png",
 	defaultColorMode: "auto",
 	defaultOrientation: "auto",
+	defaultLanguage: "auto",
 	outputDirectory: "",
 	filenamePrefix: "napkin-sketch",
 };
@@ -109,6 +111,19 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName("Default language")
+			.setDesc("BCP 47 language tag used for generation. Use 'auto' to detect from selected text.")
+			.addText((text) =>
+				text
+					.setPlaceholder("auto or en-US")
+					.setValue(this.plugin.settings.defaultLanguage)
+					.onChange(async (value) => {
+						this.plugin.settings.defaultLanguage = normalizeLanguageTagOrAutoInput(value);
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Output")
 			.setHeading();
 
@@ -161,5 +176,19 @@ export class ObsidianNapkinSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+	}
+}
+
+function normalizeLanguageTagOrAutoInput(value: string | undefined | null): string {
+	const trimmed = (value ?? "").trim();
+	if (!trimmed || trimmed.toLowerCase() === "auto") {
+		return "auto";
+	}
+
+	try {
+		const [canonical] = Intl.getCanonicalLocales(trimmed);
+		return canonical ?? trimmed;
+	} catch {
+		return trimmed;
 	}
 }
